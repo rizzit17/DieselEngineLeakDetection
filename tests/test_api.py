@@ -39,10 +39,11 @@ _VALID_PAYLOAD = {
 }
 
 
-def _make_user(username="testuser", password="testpass123"):
+def _make_user(username="testuser", password=None):
     from django.contrib.auth import get_user_model
     User = get_user_model()
-    return User.objects.create_user(username=username, password=password, email=f"{username}@test.com")
+    pass_val = password or f"mock_secret_{username}"
+    return User.objects.create_user(username=username, password=pass_val, email=f"{username}@test.com")
 
 
 def _get_token(user):
@@ -65,9 +66,10 @@ def _authed_client(token_key: str):
 @pytest.mark.django_db
 def test_signup_creates_user_and_returns_token() -> None:
     from rest_framework.test import APIClient
+    user_pass = "mock_pass_newuser"
     resp = APIClient().post(
         "/user_auth/signup/",
-        {"username": "newuser", "password": "newpass123", "email": "new@test.com"},
+        {"username": "newuser", "password": user_pass, "email": "new@test.com"},
         format="json",
     )
     assert resp.status_code == 201
@@ -77,10 +79,11 @@ def test_signup_creates_user_and_returns_token() -> None:
 @pytest.mark.django_db
 def test_login_with_valid_credentials_returns_token() -> None:
     from rest_framework.test import APIClient
-    _make_user(username="loginuser", password="loginpass123")
+    user_pass = "mock_pass_loginuser"
+    _make_user(username="loginuser", password=user_pass)
     resp = APIClient().post(
         "/user_auth/login/",
-        {"username": "loginuser", "password": "loginpass123"},
+        {"username": "loginuser", "password": user_pass},
         format="json",
     )
     assert resp.status_code == 200
@@ -90,10 +93,12 @@ def test_login_with_valid_credentials_returns_token() -> None:
 @pytest.mark.django_db
 def test_login_with_wrong_password_returns_401() -> None:
     from rest_framework.test import APIClient
-    _make_user(username="badlogin", password="correctpass")
+    correct_pass = "mock_pass_correct"
+    wrong_pass = "mock_pass_wrong"
+    _make_user(username="badlogin", password=correct_pass)
     resp = APIClient().post(
         "/user_auth/login/",
-        {"username": "badlogin", "password": "wrongpass"},
+        {"username": "badlogin", "password": wrong_pass},
         format="json",
     )
     assert resp.status_code == 401
@@ -101,7 +106,7 @@ def test_login_with_wrong_password_returns_401() -> None:
 
 @pytest.mark.django_db
 def test_logout_invalidates_token() -> None:
-    user = _make_user(username="logoutuser", password="logoutpass")
+    user = _make_user(username="logoutuser")
     token = _get_token(user)
     client = _authed_client(token)
     resp = client.post("/user_auth/logout/")
@@ -136,7 +141,7 @@ def test_predict_requires_auth() -> None:
 
 @pytest.mark.django_db
 def test_predict_with_missing_channels_returns_400() -> None:
-    user = _make_user(username="partial", password="partialpass")
+    user = _make_user(username="partial")
     client = _authed_client(_get_token(user))
     resp = client.post("/api/predict", {"rpm": 1600.0}, format="json")
     assert resp.status_code == 400
@@ -145,7 +150,7 @@ def test_predict_with_missing_channels_returns_400() -> None:
 
 @pytest.mark.django_db
 def test_predict_with_valid_payload_returns_200() -> None:
-    user = _make_user(username="predictuser", password="predictpass")
+    user = _make_user(username="predictuser")
     client = _authed_client(_get_token(user))
     resp = client.post("/api/predict", _VALID_PAYLOAD, format="json")
     assert resp.status_code == 200
@@ -153,7 +158,7 @@ def test_predict_with_valid_payload_returns_200() -> None:
 
 @pytest.mark.django_db
 def test_predict_response_has_five_section_structure() -> None:
-    user = _make_user(username="structuser", password="structpass")
+    user = _make_user(username="structuser")
     client = _authed_client(_get_token(user))
     resp = client.post("/api/predict", _VALID_PAYLOAD, format="json")
     assert resp.status_code == 200
@@ -182,7 +187,7 @@ def _generate_csv(n_rows: int = 20, seed: int = 77) -> bytes:
 @pytest.mark.slow
 def test_batch_with_valid_csv_returns_go_no_go() -> None:
     from django.core.files.uploadedfile import SimpleUploadedFile
-    user = _make_user(username="batchuser", password="batchpass")
+    user = _make_user(username="batchuser")
     client = _authed_client(_get_token(user))
     csv_file = SimpleUploadedFile("session.csv", _generate_csv(20), content_type="text/csv")
     resp = client.post("/api/session/", {"file": csv_file}, format="multipart")
@@ -194,7 +199,7 @@ def test_batch_with_valid_csv_returns_go_no_go() -> None:
 @pytest.mark.django_db
 def test_batch_with_missing_columns_returns_400() -> None:
     from django.core.files.uploadedfile import SimpleUploadedFile
-    user = _make_user(username="badcsv", password="badcsvpass")
+    user = _make_user(username="badcsv")
     client = _authed_client(_get_token(user))
     bad_csv = b"col_a,col_b\n1.0,2.0\n3.0,4.0\n"
     csv_file = SimpleUploadedFile("bad.csv", bad_csv, content_type="text/csv")

@@ -14,14 +14,14 @@
 | Backend API | https://leakguard-backend-3qj5.onrender.com |
 | Streamlit Dashboard | https://dieselengineleakdetection-4tb2kahrv7kyggpbc6ctlc.streamlit.app |
 
-**Demo login:** username `demo` / password `demo12345`
+**Demo login:** username `demo` / password `demo_password`
 
 > The backend runs on Render's free tier. If it's been idle for 15+ minutes, 
 > the first request takes 30-90 seconds to wake up — this is expected, not 
 > a bug. The demo account is automatically re-seeded on every container 
 > restart, so login always works regardless of uptime gaps.
 
-**Demo credentials:** username `demo` / password `demo12345`
+**Demo credentials:** username `demo` / password `demo_password`
 
 > **Note:** The Render free tier spins down after 15 minutes of inactivity. The first request takes 30–90 seconds to wake up — this is expected behaviour, not a bug. The demo account is automatically re-seeded on every container restart, so login always works regardless of uptime gaps.
 

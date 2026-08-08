@@ -20,7 +20,7 @@ Content-Type: application/json
 {
   "username": "test_engineer",
   "email": "engineer@caterpillar.com",
-  "password": "SecurePass123",
+  "password": "<your_password>",
   "role": "tester"
 }
 ```
@@ -55,7 +55,7 @@ Content-Type: application/json
 ```bash
 curl -X POST http://localhost:8000/user_auth/signup/ \
   -H "Content-Type: application/json" \
-  -d '{"username":"test_engineer","email":"engineer@caterpillar.com","password":"SecurePass123","role":"tester"}'
+  -d '{"username":"test_engineer","email":"engineer@caterpillar.com","password":"<your_password>","role":"tester"}'
 ```
 
 ---
@@ -68,7 +68,7 @@ Authenticate with username and password. Returns token.
 ```json
 {
   "username": "test_engineer",
-  "password": "SecurePass123"
+  "password": "<your_password>"
 }
 ```
 
@@ -89,7 +89,7 @@ Authenticate with username and password. Returns token.
 ```bash
 curl -X POST http://localhost:8000/user_auth/login/ \
   -H "Content-Type: application/json" \
-  -d '{"username":"test_engineer","password":"SecurePass123"}'
+  -d '{"username":"test_engineer","password":"<your_password>"}'
 ```
 
 ---
